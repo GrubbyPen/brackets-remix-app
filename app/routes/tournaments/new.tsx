@@ -12,17 +12,43 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const title = formData.get("title");
   const description = formData.get("description");
+  const teamSize = Number(formData.get("teamSize"));
 
   if (typeof title !== "string" || title.length === 0) {
     return json(
-      { errors: { title: "Title is required", description: null } },
+      {
+        errors: {
+          title: "Title is required",
+          description: null,
+          teamSize: null,
+        },
+      },
       { status: 400 }
     );
   }
 
   if (typeof description !== "string" || description.length === 0) {
     return json(
-      { errors: { description: "Description is required", title: null } },
+      {
+        errors: {
+          description: "Description is required",
+          title: null,
+          teamSize: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (typeof teamSize !== "number" || teamSize === 0) {
+    return json(
+      {
+        errors: {
+          teamSize: "Team Size is required",
+          title: null,
+          description: null,
+        },
+      },
       { status: 400 }
     );
   }
@@ -36,12 +62,15 @@ export default function NewTournamentPage() {
   const actionData = useActionData<typeof action>();
   const titleRef = React.useRef<HTMLInputElement>(null);
   const descriptionRef = React.useRef<HTMLTextAreaElement>(null);
+  const teamSizeRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (actionData?.errors?.title) {
       titleRef.current?.focus();
     } else if (actionData?.errors?.description) {
       descriptionRef.current?.focus();
+    } else if (actionData?.errors?.teamSize) {
+      teamSizeRef.current?.focus();
     }
   }, [actionData]);
 
@@ -77,11 +106,35 @@ export default function NewTournamentPage() {
 
       <div>
         <label className="flex w-full flex-col gap-1">
+          <span>Team Size: </span>
+          <input
+            ref={teamSizeRef}
+            type="number"
+            name="teamSize"
+            defaultValue={2}
+            className="flex-1 rounded-md border-2 border-blue-500 px-3 text-lg leading-loose"
+            aria-invalid={actionData?.errors?.teamSize ? true : undefined}
+            aria-errormessage={
+              actionData?.errors?.teamSize ? "teamSize-error" : undefined
+            }
+          />
+        </label>
+        {actionData?.errors?.teamSize && (
+          <label className="flex w-full flex-col gap-1">
+            <div className="pt-1 text-red-700" id="teamSize-error">
+              {actionData.errors.teamSize}
+            </div>
+          </label>
+        )}
+      </div>
+
+      <div>
+        <label className="flex w-full flex-col gap-1">
           <span>Description: </span>
           <textarea
             ref={descriptionRef}
             name="description"
-            rows={8}
+            rows={5}
             className="w-full flex-1 rounded-md border-2 border-blue-500 py-2 px-3 text-lg leading-6"
             aria-invalid={actionData?.errors?.description ? true : undefined}
             aria-errormessage={
