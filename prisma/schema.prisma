@@ -8,47 +8,48 @@ generator client {
 }
 
 model User {
-  id             String           @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String?
-  email          String           @unique
-  emailVerified  DateTime?        @map("email_verified")
+  email          String            @unique
+  emailVerified  DateTime?         @map("email_verified")
   image          String?
   password       Password?
-  createdAt      DateTime         @default(now()) @map(name: "created_at")
-  updatedAt      DateTime         @updatedAt @map(name: "updated_at")
-  tournaments    TounamentUsers[]
-  playersCreated Player[]         @relation(name: "creator")
-  players        Player[]         @relation(name: "user")
-  TeamPlayers    TeamPlayers[]
+  createdAt      DateTime          @default(now()) @map(name: "created_at")
+  updatedAt      DateTime          @updatedAt @map(name: "updated_at")
+  tournaments    TournamentUsers[]
+  playersCreated Player[]          @relation(name: "creator")
+  players        Player[]          @relation(name: "user")
+  teamPlayers    TeamPlayers[]
 
   @@map("users")
 }
 
 model Tournament {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  updatedAt   DateTime @updatedAt @map(name: "updated_at")
-
+  id            String            @id @default(cuid())
+  title         String
+  description   String?
+  createdAt     DateTime          @default(now()) @map(name: "created_at")
+  updatedAt     DateTime          @updatedAt @map(name: "updated_at")
   players       Player[]
-  users         TounamentUsers[]
-  teamSize      Int              @default(1) @map(name: "team_size")
-  teams         Team[]           @relation(name: "teamTournaments")
+  users         TournamentUsers[]
+  teamSize      Int               @default(1) @map(name: "team_size")
+  teams         Team[]            @relation(name: "teamTournaments")
   rounds        Round[]
-  winner        Team?            @relation("tournamentWinner", fields: [winningTeamId], references: [id])
-  winningTeamId String?          @map("winning_team_id")
+  winner        Team?             @relation("tournamentWinner", fields: [winningTeamId], references: [id])
+  winningTeamId String?           @map("winning_team_id")
+
+  @@map("tournaments")
 }
 
-model TounamentUsers {
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  tournamentId String // relation scalar field (used in the `@relation` attribute above)
-  user         User       @relation(fields: [userId], references: [id])
-  userId       String // relation scalar field (used in the `@relation` attribute above)
+model TournamentUsers {
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String     @map("tournament_id") // relation scalar field (used in the `@relation` attribute above)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String     @map("user_id") // relation scalar field (used in the `@relation` attribute above)
   assignedAt   DateTime   @default(now())
-  assignedBy   String
 
   @@id([tournamentId, userId])
+  @@map("tournament_users")
 }
 
 model Password {
@@ -56,6 +57,8 @@ model Password {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
+
+  @@map("passwords")
 }
 
 model Player {
@@ -69,6 +72,8 @@ model Player {
   createdByUserId String        @map(name: "created_by_user_id")
   user            User          @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade)
   userId          String        @map(name: "user_id")
+
+  @@map("players")
 }
 
 model Team {
@@ -80,6 +85,8 @@ model Team {
   matches        Match[]       @relation(name: "teamMatches")
   matchesWon     Match[]       @relation(name: "winningTeamMatches")
   tournamentsWon Tournament[]  @relation("tournamentWinner")
+
+  @@map("teams")
 }
 
 model TeamPlayers {
@@ -92,6 +99,7 @@ model TeamPlayers {
   assignedByUserId String   @map("assigned_by_user_id")
 
   @@id([playerId, teamId])
+  @@map("team_players")
 }
 
 model Round {
@@ -100,6 +108,8 @@ model Round {
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId String     @map("tournament_id")
   matches      Match[]
+
+  @@map("rounds")
 }
 
 model Match {
@@ -109,4 +119,6 @@ model Match {
   teams         Team[]  @relation(name: "teamMatches")
   winningTeamId String? @map("winning_team_id")
   winningTeam   Team?   @relation(name: "winningTeamMatches", fields: [winningTeamId], references: [id])
+
+  @@map("matches")
 }

@@ -6,7 +6,6 @@ export type { Tournament } from "@prisma/client";
 
 export function getTournament({
   id,
-  userId,
 }: Pick<Tournament, "id"> & {
   userId: User["id"];
 }) {
@@ -45,8 +44,8 @@ export function createTournament({
       title,
       description,
       users: {
-        connect: {
-          id: userId,
+        create: {
+          user: { connect: { id: userId } },
         },
       },
     },
