@@ -25,11 +25,14 @@ export function getTournament({
 }
 
 export function getTournamentListItems({ userId }: { userId: User["id"] }) {
-  return prisma.user
-    .findUniqueOrThrow({
-      where: { id: userId },
-    })
-    .tournaments();
+  return prisma.tournament.findMany({
+    where: { users: { some: { userId } } },
+    include: {
+      users: {
+        select: { role: true },
+      },
+    },
+  });
 }
 
 export function createTournament({
@@ -46,6 +49,7 @@ export function createTournament({
       users: {
         create: {
           user: { connect: { id: userId } },
+          role: "OWNER",
         },
       },
     },
