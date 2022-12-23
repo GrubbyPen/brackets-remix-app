@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('SPECTATOR', 'INVITEE', 'PLAYER', 'OWNER');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -29,7 +32,7 @@ CREATE TABLE "tournament_users" (
     "tournament_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "assignedBy" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'SPECTATOR',
 
     CONSTRAINT "tournament_users_pkey" PRIMARY KEY ("tournament_id","user_id")
 );
@@ -111,10 +114,10 @@ CREATE INDEX "_teamMatches_B_index" ON "_teamMatches"("B");
 ALTER TABLE "tournaments" ADD CONSTRAINT "tournaments_winning_team_id_fkey" FOREIGN KEY ("winning_team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tournament_users" ADD CONSTRAINT "tournament_users_tournament_id_fkey" FOREIGN KEY ("tournament_id") REFERENCES "tournaments"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "tournament_users" ADD CONSTRAINT "tournament_users_tournament_id_fkey" FOREIGN KEY ("tournament_id") REFERENCES "tournaments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tournament_users" ADD CONSTRAINT "tournament_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "tournament_users" ADD CONSTRAINT "tournament_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "passwords" ADD CONSTRAINT "passwords_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

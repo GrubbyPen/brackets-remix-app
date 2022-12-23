@@ -41,12 +41,20 @@ model Tournament {
   @@map("tournaments")
 }
 
+enum Role {
+  SPECTATOR
+  INVITEE
+  PLAYER
+  OWNER
+}
+
 model TournamentUsers {
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId String     @map("tournament_id") // relation scalar field (used in the `@relation` attribute above)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String     @map("user_id") // relation scalar field (used in the `@relation` attribute above)
   assignedAt   DateTime   @default(now())
+  role         Role       @default(SPECTATOR)
 
   @@id([tournamentId, userId])
   @@map("tournament_users")
