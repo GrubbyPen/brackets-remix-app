@@ -5,23 +5,41 @@ import { prisma } from "~/db.server";
 export type { Tournament } from "@prisma/client";
 
 export function getTournament({
+  userId,
   id,
 }: Pick<Tournament, "id"> & {
   userId: User["id"];
 }) {
-  return prisma.tournament.findFirst({
-    select: { id: true, description: true, title: true },
+  const tournament = prisma.tournament.findFirst({
     where: {
       AND: [
         {
           id,
         },
         {
-          users: { some: {} },
+          users: { some: { userId } },
         },
       ],
     },
+    include: {
+      users: {
+        select: {
+          role: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
+    },
   });
+  if (!tournament) {
+    throw new Error("Tournament not found");
+  }
+  if (tournament.users.length === 0) {
+    throw new Error("Tournament has no users");
+  }
+  // todo add authorisation guard
+  // check for name sharing approval
+
+  return tournament;
 }
 
 export function getTournamentListItems({ userId }: { userId: User["id"] }) {

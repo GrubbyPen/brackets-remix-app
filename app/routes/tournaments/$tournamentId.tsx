@@ -2,6 +2,7 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
+import Owners from "~/components/Owners";
 
 import { deleteTournament, getTournament } from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
@@ -34,6 +35,18 @@ export default function TournamentDetailsPage() {
       <h3 className="text-2xl font-bold">{data.tournament.title}</h3>
       <p className="py-6">{data.tournament.description}</p>
       <hr className="my-4" />
+      By{" "}
+      <Owners
+        owners={data.tournament.users
+          .filter((user) => user.role === "OWNER")
+          .map((owner) => {
+            console.log(owner);
+            return {
+              id: owner.user.id,
+              name: owner.user.name ?? owner.user.email,
+            };
+          })}
+      />
       <Form method="post">
         <button
           type="submit"
