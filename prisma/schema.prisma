@@ -37,6 +37,7 @@ model Tournament {
   rounds        Round[]
   winner        Team?             @relation("tournamentWinner", fields: [winningTeamId], references: [id])
   winningTeamId String?           @map("winning_team_id")
+  signupOpen    Boolean           @default(false) @map(name: "signup_open")
 
   @@map("tournaments")
 }

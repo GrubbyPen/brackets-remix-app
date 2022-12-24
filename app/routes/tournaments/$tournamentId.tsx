@@ -4,7 +4,11 @@ import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Owners from "~/components/Owners";
 
-import { deleteTournament, getTournament } from "~/models/tournament.server";
+import {
+  deleteTournament,
+  getTournament,
+  applyToTournament,
+} from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -13,7 +17,11 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const tournament = await getTournament({ userId, id: params.tournamentId });
   if (!tournament) {
-    throw new Response("Not Found", { status: 404 });
+    const t = await applyToTournament({ userId, id: params.tournamentId });
+    if (!t) {
+      throw new Response("Not Found", { status: 404 });
+    }
+    return redirect(`/tournaments/${t.id}/apply`);
   }
   return json({ tournament });
 }
@@ -40,7 +48,6 @@ export default function TournamentDetailsPage() {
         owners={data.tournament.users
           .filter((user) => user.role === "OWNER")
           .map((owner) => {
-            console.log(owner);
             return {
               id: owner.user.id,
               name: owner.user.name ?? owner.user.email,

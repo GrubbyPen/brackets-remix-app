@@ -30,12 +30,32 @@ export function getTournament({
       },
     },
   });
+
   if (!tournament) {
     throw new Error("Tournament not found");
   }
-  if (tournament.users.length === 0) {
-    throw new Error("Tournament has no users");
+  // todo add authorisation guard
+  // check for name sharing approval
+
+  return tournament;
+}
+
+export function applyToTournament({
+  userId,
+  id,
+}: Pick<Tournament, "id"> & {
+  userId: User["id"];
+}) {
+  const tournament = prisma.tournament.findFirst({
+    where: {
+      AND: [{ signupOpen: true }, { id }],
+    },
+  });
+
+  if (!tournament) {
+    throw new Error("Tournament not found");
   }
+
   // todo add authorisation guard
   // check for name sharing approval
 
