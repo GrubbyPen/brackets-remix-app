@@ -13,6 +13,7 @@ export async function action({ request }: ActionArgs) {
   const title = formData.get("title");
   const description = formData.get("description");
   const teamSize = Number(formData.get("teamSize"));
+  const signupOpen = Boolean(formData.get("signupOpen"));
 
   if (typeof title !== "string" || title.length === 0) {
     return json(
@@ -53,7 +54,13 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const tournament = await createTournament({ title, description, userId });
+  const tournament = await createTournament({
+    title,
+    description,
+    userId,
+    teamSize,
+    signupOpen,
+  });
 
   return redirect(`/tournaments/${tournament.id}`);
 }
@@ -103,7 +110,6 @@ export default function NewTournamentPage() {
           </div>
         )}
       </div>
-
       <div>
         <label className="flex w-full flex-col gap-1">
           <span>Team Size: </span>
@@ -127,7 +133,6 @@ export default function NewTournamentPage() {
           </label>
         )}
       </div>
-
       <div>
         <label className="flex w-full flex-col gap-1">
           <span>Description: </span>
@@ -148,7 +153,20 @@ export default function NewTournamentPage() {
           </div>
         )}
       </div>
-
+      <div className="flex justify-center">
+        <label className="relative inline-flex cursor-pointer items-center">
+          <input
+            name="signupOpen"
+            type="checkbox"
+            className="peer sr-only"
+            defaultChecked={false}
+          />
+          <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-4 peer-focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
+          <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+            Open the tournament for signup.
+          </span>
+        </label>
+      </div>
       <div className="text-right">
         <button
           type="submit"

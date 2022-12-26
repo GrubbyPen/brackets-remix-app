@@ -54,6 +54,13 @@ export default function TournamentsPage() {
                     to={tournament.id}
                   >
                     📝 {tournament.title}
+                    <small className="block text-sm text-gray-500">
+                      {tournament.users
+                        .filter((u) => u.userId === user.id)
+                        .map((owner) => {
+                          return owner.role;
+                        })}
+                    </small>
                   </NavLink>
                 </li>
               ))}

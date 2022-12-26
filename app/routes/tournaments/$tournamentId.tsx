@@ -7,7 +7,7 @@ import Owners from "~/components/Owners";
 import {
   deleteTournament,
   getTournament,
-  applyToTournament,
+  joinTournament,
 } from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
 
@@ -17,13 +17,13 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const tournament = await getTournament({ userId, id: params.tournamentId });
   if (!tournament) {
-    const t = await applyToTournament({ userId, id: params.tournamentId });
+    const t = await joinTournament({ userId, id: params.tournamentId });
     if (!t) {
       throw new Response("Not Found", { status: 404 });
     }
-    return redirect(`/tournaments/${t.id}/apply`);
+    return redirect(`/tournaments/${t.id}/join`);
   }
-  return json({ tournament });
+  return json({ userId, tournament });
 }
 
 export async function action({ request, params }: ActionArgs) {
@@ -38,9 +38,13 @@ export async function action({ request, params }: ActionArgs) {
 export default function TournamentDetailsPage() {
   const data = useLoaderData<typeof loader>();
 
+  const isOwner = data.tournament.users
+    .filter((u) => u.user.id === data.userId)
+    .some((me) => me.role === "OWNER");
+
   return (
     <div>
-      <h3 className="text-2xl font-bold">{data.tournament.title}</h3>
+      <h2 className="text-2xl font-bold">{data.tournament.title}</h2>
       <p className="py-6">{data.tournament.description}</p>
       <hr className="my-4" />
       By{" "}
@@ -54,14 +58,22 @@ export default function TournamentDetailsPage() {
             };
           })}
       />
-      <Form method="post">
-        <button
-          type="submit"
-          className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-        >
-          Delete
-        </button>
-      </Form>
+      <h3>
+        Tournament is {data.tournament.signupOpen ? "open" : "closed"} for
+        signing up.
+      </h3>
+      {isOwner && (
+        <div>
+          <Form method="post">
+            <button
+              type="submit"
+              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+            >
+              Delete
+            </button>
+          </Form>
+        </div>
+      )}
     </div>
   );
 }

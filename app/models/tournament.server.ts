@@ -1,4 +1,4 @@
-import type { User, Tournament } from "@prisma/client";
+import type { User, Tournament, TournamentUsers } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
@@ -40,7 +40,7 @@ export function getTournament({
   return tournament;
 }
 
-export function applyToTournament({
+export function joinTournament({
   userId,
   id,
 }: Pick<Tournament, "id"> & {
@@ -49,6 +49,15 @@ export function applyToTournament({
   const tournament = prisma.tournament.findFirst({
     where: {
       AND: [{ signupOpen: true }, { id }],
+    },
+    include: {
+      users: {
+        where: { role: "OWNER" },
+        select: {
+          role: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
     },
   });
 
@@ -67,7 +76,7 @@ export function getTournamentListItems({ userId }: { userId: User["id"] }) {
     where: { users: { some: { userId } } },
     include: {
       users: {
-        select: { role: true },
+        select: { userId: true, role: true },
       },
     },
   });
@@ -77,6 +86,8 @@ export function createTournament({
   description,
   title,
   userId,
+  teamSize,
+  signupOpen,
 }: Pick<Tournament, "description" | "title"> & {
   userId: User["id"];
 }) {
@@ -84,6 +95,8 @@ export function createTournament({
     data: {
       title,
       description,
+      teamSize,
+      signupOpen,
       users: {
         create: {
           user: { connect: { id: userId } },
@@ -101,5 +114,23 @@ export function deleteTournament({
   // todo add authorisation guard
   return prisma.tournament.deleteMany({
     where: { id },
+  });
+}
+
+export function applyToTournament({
+  id,
+  userId,
+  role,
+}: Pick<Tournament, "id"> & {
+  userId: User["id"];
+  role: TournamentUsers["role"];
+}) {
+  // todo add authorisation guard
+  return prisma.tournamentUsers.create({
+    data: {
+      tournament: { connect: { id } },
+      user: { connect: { id: userId } },
+      role,
+    },
   });
 }
