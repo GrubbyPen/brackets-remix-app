@@ -1,11 +1,17 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import sharedStyles from "~/styles/shared.css";
 
 import { getTournamentListItems } from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import Navbar from "~/components/Navbar";
+import type { LinksFunction } from "@remix-run/react/dist/routeModules";
+
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: sharedStyles }];
+};
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);

@@ -134,3 +134,20 @@ export function applyToTournament({
     },
   });
 }
+
+export function updateTournament({
+  userId,
+  id,
+  data,
+}: {
+  userId: User["id"];
+  id: Tournament["id"];
+  data: Tournament;
+}) {
+  // todo add authorisation guard
+  console.log("in update", data, userId, id);
+  return prisma.tournament.update({
+    where: { id },
+    data,
+  });
+}
