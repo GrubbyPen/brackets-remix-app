@@ -1,9 +1,11 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, useNavigate } from "@remix-run/react";
 
 import { json, redirect } from "@remix-run/node";
 import { useCatch } from "@remix-run/react";
 import invariant from "tiny-invariant";
+import TournamentForm from "~/components/TournamentForm";
+import Modal from "~/components/Modal";
 import {
   deleteTournament,
   getTournament,
@@ -28,6 +30,15 @@ export async function loader({ request, params }: LoaderArgs) {
   }
   return json({ userId, tournament });
 }
+
+// export async function action({ request, params }: ActionArgs) {
+//   const userId = await requireUserId(request);
+//   invariant(params.tournamentId, "tournamentId not found");
+
+//   await deleteTournament({ userId, id: params.tournamentId });
+
+//   return redirect("/tournaments");
+// }
 
 export async function action({ request, params }: ActionArgs) {
   invariant(params.tournamentId, "tournamentId not found");
@@ -65,46 +76,46 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
-export default function TournamentDetailsPage() {
+export default function TournamentEditPage() {
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   const isOwner = data.tournament.users
     .filter((u) => u.user.id === data.userId)
     .some((me) => me.role === "OWNER");
 
+  function closeHandler() {
+    navigate("..");
+  }
+
   return (
-    <div>
-      <Owners
-        owners={data.tournament.users
-          .filter((user) => user.role === "OWNER")
-          .map((owner) => {
-            return {
-              id: owner.user.id,
-              name: owner.user.name ?? owner.user.email,
-            };
-          })}
-      />
-      {isOwner && (
-        <div>
-          <Form method="delete">
-            <button
-              type="submit"
-              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
-              Create teams
-            </button>
-          </Form>
-          <Form method="delete">
-            <button
-              type="submit"
-              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
-              Create round
-            </button>
-          </Form>
-        </div>
-      )}
-    </div>
+    <Modal onClose={closeHandler}>
+      <div>
+        <Owners
+          owners={data.tournament.users
+            .filter((user) => user.role === "OWNER")
+            .map((owner) => {
+              return {
+                id: owner.user.id,
+                name: owner.user.name ?? owner.user.email,
+              };
+            })}
+        />
+        {isOwner && (
+          <div>
+            <Form method="delete">
+              <button
+                type="submit"
+                className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+              >
+                Delete
+              </button>
+            </Form>
+          </div>
+        )}
+      </div>
+      <TournamentForm />
+    </Modal>
   );
 }
 
