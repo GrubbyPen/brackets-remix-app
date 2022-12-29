@@ -64,7 +64,7 @@ export async function action({ request }: ActionArgs) {
     signupOpen,
   });
 
-  return redirect(`/tournaments/${tournament.id}`);
+  return redirect(`/tournaments/`);
 }
 
 export default function NewTournamentPage() {
