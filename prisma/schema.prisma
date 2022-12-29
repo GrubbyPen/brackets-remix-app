@@ -82,8 +82,8 @@ model Team {
   players        TeamPlayers[]
   tournament     Tournament    @relation(name: "teamTournaments", fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId   String        @map("tournament_id")
-  matches        Match[]       @relation(name: "teamMatches")
-  matchesWon     Match[]       @relation(name: "winningTeamMatches")
+  games          Game[]        @relation(name: "teamGames")
+  gamesWon       Game[]        @relation(name: "winningGames")
   tournamentsWon Tournament[]  @relation("tournamentWinner")
 
   @@map("teams")
@@ -107,18 +107,18 @@ model Round {
   name         String
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   tournamentId String     @map("tournament_id")
-  matches      Match[]
+  matches      Game[]
 
   @@map("rounds")
 }
 
-model Match {
+model Game {
   id            String  @id @default(cuid())
   round         Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
   roundId       String  @map("round_id")
-  teams         Team[]  @relation(name: "teamMatches")
+  teams         Team[]  @relation(name: "teamGames")
   winningTeamId String? @map("winning_team_id")
-  winningTeam   Team?   @relation(name: "winningTeamMatches", fields: [winningTeamId], references: [id])
+  winningTeam   Team?   @relation(name: "winningGames", fields: [winningTeamId], references: [id])
 
   @@map("matches")
 }
