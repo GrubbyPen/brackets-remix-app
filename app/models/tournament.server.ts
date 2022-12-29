@@ -28,6 +28,12 @@ export function getTournament({
           user: { select: { id: true, name: true, email: true } },
         },
       },
+      players: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
