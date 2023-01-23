@@ -37,8 +37,16 @@ model Tournament {
   rounds        Round[]
   winner        Team?             @relation("tournamentWinner", fields: [winningTeamId], references: [id])
   winningTeamId String?           @map("winning_team_id")
+  signupOpen    Boolean           @default(false) @map(name: "signup_open")
 
   @@map("tournaments")
+}
+
+enum Role {
+  SPECTATOR
+  INVITEE
+  PLAYER
+  OWNER
 }
 
 model TournamentUsers {
@@ -47,6 +55,7 @@ model TournamentUsers {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String     @map("user_id") // relation scalar field (used in the `@relation` attribute above)
   assignedAt   DateTime   @default(now())
+  role         Role       @default(SPECTATOR)
 
   @@id([tournamentId, userId])
   @@map("tournament_users")

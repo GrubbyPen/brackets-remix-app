@@ -1,47 +1,67 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Form, useCatch, useLoaderData } from "@remix-run/react";
-import invariant from "tiny-invariant";
+import { Form, useLoaderData } from "@remix-run/react";
 
-import { deleteTournament, getTournament } from "~/models/tournament.server";
+import { json, redirect } from "@remix-run/node";
+import { useCatch } from "@remix-run/react";
+import invariant from "tiny-invariant";
+import { getTournament, joinTournament } from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
+import Owners from "~/components/Owners";
+import PlayersList from "~/components/PlayerList";
 
 export async function loader({ request, params }: LoaderArgs) {
   const userId = await requireUserId(request);
   invariant(params.tournamentId, "tournamentId not found");
 
   const tournament = await getTournament({ userId, id: params.tournamentId });
+
   if (!tournament) {
-    throw new Response("Not Found", { status: 404 });
+    const t = await joinTournament({ userId, id: params.tournamentId });
+    if (!t) {
+      throw new Response("Not Found", { status: 404 });
+    }
+    return redirect(`/tournaments/${t.id}/join`);
   }
-  return json({ tournament });
+  return json({ userId, tournament });
 }
 
 export async function action({ request, params }: ActionArgs) {
-  const userId = await requireUserId(request);
   invariant(params.tournamentId, "tournamentId not found");
-
-  await deleteTournament({ userId, id: params.tournamentId });
-
-  return redirect("/tournaments");
+  const userId = await requireUserId(request);
 }
 
 export default function TournamentDetailsPage() {
   const data = useLoaderData<typeof loader>();
 
+  const isOwner = data.tournament.users
+    .filter((u) => u.user.id === data.userId)
+    .some((me) => me.role === "OWNER");
+
   return (
     <div>
-      <h3 className="text-2xl font-bold">{data.tournament.title}</h3>
-      <p className="py-6">{data.tournament.description}</p>
-      <hr className="my-4" />
-      <Form method="post">
-        <button
-          type="submit"
-          className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-        >
-          Delete
-        </button>
-      </Form>
+      <Owners
+        owners={data.tournament.users
+          .filter((user) => user.role === "OWNER")
+          .map((owner) => {
+            return {
+              id: owner.user.id,
+              name: owner.user.name ?? owner.user.email,
+            };
+          })}
+      />
+      <PlayersList players={data.tournament.players} />
+      {isOwner && (
+        <div>
+          <Form method="delete">
+            <button
+              type="submit"
+              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+            >
+              Create round
+            </button>
+          </Form>
+        </div>
+      )}
     </div>
   );
 }
