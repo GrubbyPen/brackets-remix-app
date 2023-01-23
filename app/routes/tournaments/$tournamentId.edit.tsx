@@ -31,15 +31,6 @@ export async function loader({ request, params }: LoaderArgs) {
   return json({ userId, tournament });
 }
 
-// export async function action({ request, params }: ActionArgs) {
-//   const userId = await requireUserId(request);
-//   invariant(params.tournamentId, "tournamentId not found");
-
-//   await deleteTournament({ userId, id: params.tournamentId });
-
-//   return redirect("/tournaments");
-// }
-
 export async function action({ request, params }: ActionArgs) {
   invariant(params.tournamentId, "tournamentId not found");
   const userId = await requireUserId(request);

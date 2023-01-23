@@ -4,14 +4,10 @@ import { Form, useLoaderData } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import { useCatch } from "@remix-run/react";
 import invariant from "tiny-invariant";
-import {
-  deleteTournament,
-  getTournament,
-  joinTournament,
-  updateTournament,
-} from "~/models/tournament.server";
+import { getTournament, joinTournament } from "~/models/tournament.server";
 import { requireUserId } from "~/session.server";
 import Owners from "~/components/Owners";
+import PlayersList from "~/components/PlayerList";
 
 export async function loader({ request, params }: LoaderArgs) {
   const userId = await requireUserId(request);
@@ -32,37 +28,6 @@ export async function loader({ request, params }: LoaderArgs) {
 export async function action({ request, params }: ActionArgs) {
   invariant(params.tournamentId, "tournamentId not found");
   const userId = await requireUserId(request);
-
-  if (request.method === "PATCH") {
-    const formData = await request.formData();
-    const title = formData.get("title");
-    const description = formData.get("description");
-    const teamSize = Number(formData.get("teamSize"));
-    const signupOpen = Boolean(formData.get("signupOpen"));
-    // const tournamentData = Object.fromEntries(formData);
-    console.log("in save ...", params.tournamentId);
-    // try {
-    //   validateFormInput(tournamentData);
-    // } catch (error) {
-    //   return error;
-    // }
-
-    await updateTournament({
-      userId,
-      id: params.tournamentId,
-      data: {
-        title,
-        description,
-        teamSize,
-        signupOpen,
-      },
-    });
-
-    return redirect("/tournaments");
-  } else if (request.method === "DELETE") {
-    await deleteTournament({ userId, id: params.tournamentId });
-    return redirect("/tournaments");
-  }
 }
 
 export default function TournamentDetailsPage() {
@@ -84,16 +49,9 @@ export default function TournamentDetailsPage() {
             };
           })}
       />
+      <PlayersList players={data.tournament.players} />
       {isOwner && (
         <div>
-          <Form method="delete">
-            <button
-              type="submit"
-              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
-              Create teams
-            </button>
-          </Form>
           <Form method="delete">
             <button
               type="submit"

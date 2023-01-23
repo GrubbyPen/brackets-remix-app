@@ -4,7 +4,6 @@ import type { action } from "~/routes/tournaments/$tournamentId";
 
 export default function TournamentForm() {
   const actionData = useActionData<typeof action>();
-  // const tournamentData = useLoaderData().tournament;
   const matches = useMatches();
   const params = useParams();
   const titleRef = React.useRef<HTMLInputElement>(null);
@@ -96,16 +95,6 @@ export default function TournamentForm() {
       <div>
         <label className="flex w-full flex-col gap-1">
           <span>Description: </span>
-          {/* <input
-            name="description"
-            ref={descriptionRef}
-            defaultValue={defaultValues.description}
-            className="w-full flex-1 rounded-md border-2 border-blue-500 py-2 px-3 text-lg leading-6"
-            aria-invalid={actionData?.errors?.description ? true : undefined}
-            aria-errormessage={
-              actionData?.errors?.description ? "description-error" : undefined
-            }
-          /> */}
           <textarea
             ref={descriptionRef}
             name="description"
